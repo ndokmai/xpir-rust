@@ -6,37 +6,37 @@ use super::{PirQuery, PirReply};
 
 extern "C" {
     fn cpp_client_setup(
-        len: libc::uint64_t,
-        num: libc::uint64_t,
-        alpha: libc::uint64_t,
-        depth: libc::uint64_t,
+        len: u64, 
+        num: u64, 
+        alpha: u64, 
+        depth: u64, 
     ) -> *mut libc::c_void;
 
     fn cpp_client_generate_query(
         client: *const libc::c_void,
-        index: libc::uint64_t,
-        q_len: *mut libc::uint64_t,
-        q_num: *mut libc::uint64_t,
-    ) -> *mut libc::uint8_t;
+        index: u64, 
+        q_len: *mut u64, 
+        q_num: *mut u64, 
+    ) -> *mut u8; 
 
     fn cpp_client_process_reply(
         client: *const libc::c_void,
-        reply: *const libc::uint8_t,
-        r_len: libc::uint64_t,
-        r_num: libc::uint64_t,
-        e_len: *mut libc::uint64_t,
-    ) -> *mut libc::uint8_t;
+        reply: *const u8, 
+        r_len: u64, 
+        r_num: u64, 
+        e_len: *mut u64, 
+    ) -> *mut u8;
 
     fn cpp_client_free(client: *mut libc::c_void);
 
     fn cpp_client_update_db_params(
         client: *const libc::c_void,
-        len: libc::uint64_t,
-        num: libc::uint64_t,
-        alpha: libc::uint64_t,
-        depth: libc::uint64_t,
+        len: u64, 
+        num: u64, 
+        alpha: u64, 
+        depth: u64, 
     );
-    fn cpp_buffer_free(buffer: *mut libc::uint8_t);
+    fn cpp_buffer_free(buffer: *mut u8);
 }
 
 pub struct PirClient<'a> {
@@ -121,6 +121,24 @@ impl<'a> PirClient<'a> {
             r[0].clone()
         };
 
+        result
+    }
+
+    pub fn decode_reply_to_vec(&self, reply: &PirReply) -> Vec<u8> 
+    {
+        let mut e_len: u64 = 0;
+        let result: Vec<u8> = unsafe {
+            let ptr = cpp_client_process_reply(
+                self.client,
+                reply.reply.as_ptr(),
+                reply.reply.len() as u64,
+                reply.num,
+                &mut e_len,
+            );
+            let r = slice::from_raw_parts_mut(ptr as *mut u8, e_len as usize).to_vec();
+            cpp_buffer_free(ptr);
+            r
+        };
         result
     }
 }

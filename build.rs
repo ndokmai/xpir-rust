@@ -1,9 +1,8 @@
 extern crate cmake;
-extern crate gcc;
 
 fn main() {
     // Compile and link pung C++ PIR shim
-    gcc::Build::new()
+    cc::Build::new()
         .file("src/cpp/pir.cpp")
         .include("deps/xpir/")
         .flag("-std=c++11")

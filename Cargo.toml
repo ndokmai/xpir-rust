@@ -8,7 +8,7 @@ repository = "https://github.com/sga001/pir.git"
 
 [build-dependencies]
 cmake = "0.1.31"
-gcc = "0.3.54"
+cc = "1.0.45"
 
 [dependencies]
 serde = "1.0.70" 

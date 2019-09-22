@@ -5,24 +5,24 @@ use super::{PirQuery, PirReply};
 
 extern "C" {
     fn cpp_server_setup(
-        len: libc::uint64_t,
-        collection: *const libc::uint8_t,
-        num: libc::uint64_t,
-        alpha: libc::uint64_t,
-        depth: libc::uint64_t,
+        len: u64, 
+        collection: *const u8, 
+        num: u64, 
+        alpha: u64, 
+        depth: u64, 
     ) -> *mut libc::c_void;
 
     fn cpp_server_process_query(
         server: *const libc::c_void,
-        q: *const libc::uint8_t,
-        q_len: libc::uint64_t,
-        q_num: libc::uint64_t,
-        r_len: *mut libc::uint64_t, // reply length
-        r_num: *mut libc::uint64_t,
-    ) -> *mut libc::uint8_t;
+        q: *const u8, 
+        q_len: u64, 
+        q_num: u64,
+        r_len: *mut u64, // reply length
+        r_num: *mut u64,
+    ) -> *mut u8;
 
     fn cpp_server_free(server: *mut libc::c_void);
-    fn cpp_buffer_free(buffer: *mut libc::uint8_t);
+    fn cpp_buffer_free(buffer: *mut u8);
 }
 
 pub struct PirServer<'a> {
@@ -60,6 +60,21 @@ impl<'a> PirServer<'a> {
                 collection.len() as u64,
                 alpha,
                 depth,
+            ))
+        };
+
+        PirServer { server: server_ptr }
+    }
+
+    pub fn from_raw_with_params(ptr: *const u8, num: u64, size: u64, 
+                                alpha: u64, depth: u64) -> PirServer<'a> {
+        let server_ptr: &'a mut libc::c_void = unsafe {
+            &mut *(cpp_server_setup(
+                    num*size,
+                    ptr,
+                    num,
+                    alpha,
+                    depth,
             ))
         };
 
